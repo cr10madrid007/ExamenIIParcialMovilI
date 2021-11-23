@@ -13,9 +13,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.examen_2p.databinding.ActivityGpsactivityBinding;
 
 public class GPSActivity extends FragmentActivity implements OnMapReadyCallback {
+    usuarios user= new usuarios();
 
     private GoogleMap mMap;
     private ActivityGpsactivityBinding binding;
+    private Double latitud, longitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +30,9 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        user = (usuarios) getIntent().getExtras().getSerializable("itemDetalle");
+
     }
 
     /**
@@ -42,10 +47,12 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        user = (usuarios) getIntent().getExtras().getSerializable("itemDetalle");
+        latitud= Double.parseDouble (user.getLatitud());
+        longitud= Double.parseDouble (user.getLongitud());
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        LatLng sydney = new LatLng(latitud, longitud);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Ubicación del Contacto"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }

@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "1012349891750",
-    "project_id": "economicodb",
-    "storage_bucket": "economicodb.appspot.com"
+    "project_number": "343106040433",
+    "project_id": "exameniiparcialmovili",
+    "storage_bucket": "exameniiparcialmovili.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1012349891750:android:5f0480bbf130017a4af067",
+        "mobilesdk_app_id": "1:343106040433:android:d27b1fbc7d5f0a276be1d0",
         "android_client_info": {
           "package_name": "com.example.examen_2p"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1012349891750-o6ekphrk1do1g78a45or3610j5cf9t0t.apps.googleusercontent.com",
+          "client_id": "343106040433-hkdcmqj5kopl0p119oic2t7oqd3taskc.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAcx9AGbVyN4ZwPNCeTFaRiUJ_E7o0CWwQ"
+          "current_key": "AIzaSyDmsCMFyVQ2eoQ0i_Tvudkz_sc8DEzfDuo"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1012349891750-o6ekphrk1do1g78a45or3610j5cf9t0t.apps.googleusercontent.com",
+              "client_id": "343106040433-hkdcmqj5kopl0p119oic2t7oqd3taskc.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

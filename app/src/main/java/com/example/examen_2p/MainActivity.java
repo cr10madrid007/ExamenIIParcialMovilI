@@ -1,10 +1,13 @@
 package com.example.examen_2p;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 
@@ -28,6 +31,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -35,13 +39,30 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+
+import id.zelory.compressor.Compressor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,20 +70,33 @@ public class MainActivity extends AppCompatActivity {
 
     private Bitmap photo;
     private TextView txbName, txbTel, txbLat, txbLong;
-    private ImageView imvPhoto;
-    private Button btnSave, btnContactos;
+
+    private Button btnSave, btnContactos, btnfoto;
     private LocationManager ubicacion;
     TextView mensaje1;
     TextView mensaje2;
+    private DatabaseReference mDataBase;
+    private String nombre;
+    private String telefono;
+    private String latitud;
+    private String longitud;
+
+    private ImageView foto;
+    private StorageReference storageReference;
+    private ProgressDialog cargando;
+    Bitmap thumb_bitmap = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imvPhoto = findViewById(R.id.imvPhoto);
-        btnContactos = findViewById(R.id.btnContactos);
+        foto = findViewById(R.id.img_foto);
+        //btnContactos = findViewById(R.id.btnContactos);
         btnSave = findViewById(R.id.btnSave);
+        btnContactos = findViewById(R.id.btnContactos);
+        btnfoto = findViewById(R.id.btnfoto);
         txbName = findViewById(R.id.txbName);
         txbTel = findViewById(R.id.txbTel);
         txbLat = findViewById(R.id.txbLatitud);
@@ -70,6 +104,10 @@ public class MainActivity extends AppCompatActivity {
 
         mensaje1 = (TextView) findViewById(R.id.txbLatitud);
         mensaje2 = (TextView) findViewById(R.id.txbLongitud);
+
+        mDataBase = FirebaseDatabase.getInstance().getReference();
+        storageReference = FirebaseStorage.getInstance().getReference().child("img_comprimidas");
+        cargando = new ProgressDialog(this);
 
 
 
@@ -94,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             btnSave.setText("Actualizar");
             btnContactos.setText("Cancelar");
         }
-
+/*
         imvPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,30 +150,13 @@ public class MainActivity extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(Accion.bandera){
-                    if(txbName.length() != 0 || txbTel.length() != 0 || txbLat.length() != 0 || txbLong.length() != 0){
-                        //datos de aws
-                        Toast.makeText(getApplicationContext(), "Dato actualizado", Toast.LENGTH_LONG).show();
-                        btnSave.setText("Agregar Contactos");
-                        btnContactos.setText("Contactos");
-                        Accion.bandera = false;
-                        ClearScreen();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "Complete Todos los Campos", Toast.LENGTH_SHORT).show();
-                    }
+                recogerVal();
+                Toast.makeText(MainActivity.this, "Guardado", Toast.LENGTH_SHORT).show();
 
-                }else{
-                    if(txbName.length() != 0 || txbTel.length() != 0 || txbLat.length() != 0 || txbLong.length() != 0){
-                        AgregarContactos();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "Complete Todos los Campos", Toast.LENGTH_SHORT).show();
-                    }
-                }
             }
         });
 
-
-        btnContactos.setOnClickListener(new View.OnClickListener() {
+          btnContactos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(Accion.bandera){
@@ -149,8 +170,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+*/
+        btnContactos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                    Intent intent = new Intent(getApplicationContext(), ContactsActivity.class);
+                    startActivity(intent);
+
+            }
+        });
+        btnfoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CropImage.startPickImageActivity(MainActivity.this);
+            }
+        });
+
+
     }
 
+/*/
+    private void recogerVal() {
+        nombre= txbName.getText().toString();
+        telefono= txbTel.getText().toString();
+        longitud= txbLong.getText().toString();
+        latitud= txbLat.getText().toString();
+        usuarios user= new usuarios(nombre, telefono, latitud, longitud);
+        mDataBase.child("usuario").push().setValue(user);
+    }
+*/
 
     private void AgregarContactos() {
         //datos de aws
@@ -165,11 +214,8 @@ public class MainActivity extends AppCompatActivity {
         txbLong.setText("");
     }
 
-    private void GaleriaImagenes() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, RESULT_GALLERY);
-    }
 
+/*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -183,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception ex){
         }
     }
-
+*/
     private void sendImage() {
         String url = "";
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -323,5 +369,122 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+
+            Uri imgaeuri = CropImage.getPickImageResultUri(this, data);
+
+            //Recortar la IMG
+
+            CropImage.activity(imgaeuri)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setRequestedSize(500, 500)
+                    .setAspectRatio(2, 1).start(MainActivity.this);
+// 648, 480
+        }
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if (resultCode == RESULT_OK) {
+                Uri resultUri = result.getUri();
+
+                File url = new File(resultUri.getPath());
+
+                Picasso.with(this).load(url).into(foto);
+
+                //comprimiendo imagen
+
+                try {
+                    thumb_bitmap = new Compressor(this).setMaxWidth(640).setMaxHeight(480).setQuality(90).compressToBitmap(url);
+                } catch (IOException e) {
+
+                    e.printStackTrace();
+                }
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+                final byte[] thumb_byte = byteArrayOutputStream.toByteArray();
+
+                //fin del compresor
+
+
+                btnSave.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        cargando.setTitle("Subiendo foto...");
+                        cargando.setTitle("Espere por favor...");
+                        cargando.show();
+
+                        String fecha = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+
+                        StorageReference ref = storageReference.child(fecha);
+                        UploadTask uploadTask = ref.putBytes(thumb_byte);
+
+                        //subir imagen en storage....
+
+                        Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if (!task.isSuccessful()) {
+                                    throw Objects.requireNonNull(task.getException());
+                                }
+
+                                return ref.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+
+
+                                Uri dowloaduri = task.getResult();
+
+
+                                nombre= txbName.getText().toString();
+                                telefono= txbTel.getText().toString();
+                                longitud= txbLong.getText().toString();
+                                latitud= txbLat.getText().toString();
+                                String url = dowloaduri.toString();
+
+                                if (!nombre.isEmpty() && !telefono.isEmpty() && !longitud.isEmpty() && !latitud.isEmpty()) {
+
+                                    usuarios user= new usuarios(nombre, telefono, latitud, longitud,url);
+                                    mDataBase.child("usuario").push().setValue(user);
+
+                                    Toast.makeText(MainActivity.this, "Datos exitosos", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Debe completar los campos", Toast.LENGTH_LONG).show();
+                                }
+
+
+                                cargando.dismiss();
+
+                                Toast.makeText(MainActivity.this, "Imagen cargada con exito", Toast.LENGTH_SHORT).show();
+
+
+                            }
+                        });
+
+
+                    }
+                });
+
+
+            }
+
+        }
+
+
     }
 }
